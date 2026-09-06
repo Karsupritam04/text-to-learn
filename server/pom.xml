@@ -55,11 +55,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-        <!-- Embedded MongoDB for zero-config local execution when no external mongod is running -->
+        <!-- Pure Java in-memory MongoDB: zero native binaries, zero downloads, works in any container -->
         <dependency>
-            <groupId>de.flapdoodle.embed</groupId>
-            <artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
-            <version>4.11.0</version>
+            <groupId>de.bwaldvogel</groupId>
+            <artifactId>mongo-java-server</artifactId>
+            <version>1.45.0</version>
         </dependency>
 
         <dependency>
