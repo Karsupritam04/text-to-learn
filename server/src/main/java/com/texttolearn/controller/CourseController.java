@@ -8,6 +8,8 @@ import com.texttolearn.model.Lesson;
 import com.texttolearn.repository.CourseRepository;
 import com.texttolearn.repository.LessonRepository;
 import com.texttolearn.repository.ModuleRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +43,8 @@ public class CourseController {
         return courseRepository.findByCreator(creator);
     }
 
-    /** Course overview page: course + modules + lesson stubs (titles only, content loads on demand). */
+    /** Course overview page: course + modules + lesson stubs (cached in-memory for swift repeated access). */
+    @Cacheable(value = "courseDetails", key = "#courseId")
     @GetMapping("/courses/{courseId}")
     public CourseDetailResponse getCourse(@PathVariable String courseId) {
         Course course = courseRepository.findById(courseId)
@@ -56,6 +59,7 @@ public class CourseController {
         return new CourseDetailResponse(course, modules);
     }
 
+    @CacheEvict(value = "courseDetails", key = "#courseId")
     @DeleteMapping("/courses/{courseId}")
     public void deleteCourse(@PathVariable String courseId) {
         Course course = courseRepository.findById(courseId)

@@ -2,6 +2,7 @@ package com.texttolearn.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -25,6 +26,7 @@ public class YouTubeService {
 
     public record VideoResult(String videoId, String title, String embedUrl) {}
 
+    @Cacheable(value = "youtubeVideos", key = "#query")
     public List<VideoResult> search(String query, int maxResults) {
         if (apiKey == null || apiKey.isBlank()) {
             // No key configured yet - return an empty list so the frontend can show a friendly
