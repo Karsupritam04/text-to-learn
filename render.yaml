@@ -1,0 +1,24 @@
+services:
+  # Spring Boot Backend Web Service
+  - type: web
+    name: text-to-learn-backend
+    env: java
+    rootDir: server
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/text-to-learn-backend.jar
+    plan: free
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false
+      - key: AI_PROVIDER
+        value: rule-based
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: '*'
