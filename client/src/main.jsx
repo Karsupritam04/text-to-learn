@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { Auth0Provider } from '@auth0/auth0-react'
+import { AuthProvider } from './hooks/useAuth.jsx'
 import App from './App.jsx'
 import './index.css'
 
@@ -11,15 +12,15 @@ const auth0Audience = import.meta.env.VITE_AUTH0_AUDIENCE
 const auth0Configured = Boolean(auth0Domain && auth0ClientId)
 
 function Root() {
-  const tree = (
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+  const inner = (
+    <AuthProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AuthProvider>
   )
 
-  // Milestone 4: only wrap with Auth0Provider once real credentials are supplied.
-  // Until then the app runs fully unauthenticated against the backend's dev-mode security config.
-  if (!auth0Configured) return tree
+  if (!auth0Configured) return inner
 
   return (
     <Auth0Provider
@@ -30,7 +31,7 @@ function Root() {
         audience: auth0Audience || undefined,
       }}
     >
-      {tree}
+      {inner}
     </Auth0Provider>
   )
 }

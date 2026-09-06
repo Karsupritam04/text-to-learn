@@ -13,32 +13,35 @@ export default function Sidebar() {
 
       <nav className="flex flex-col gap-1 text-sm">
         <SidebarLink to="/">All courses</SidebarLink>
-        {isAuthenticated && <SidebarLink to="/my-courses">My courses</SidebarLink>}
+        <SidebarLink to="/my-courses">My courses</SidebarLink>
       </nav>
 
       <div className="mt-auto pt-6 border-t border-ink-800 text-sm">
-        {!configured && (
-          <p className="text-ink-700/80 text-xs leading-relaxed mb-3">
-            Auth0 isn't configured yet — running unauthenticated. See client/.env.example.
-          </p>
-        )}
         {isAuthenticated ? (
-          <div className="flex items-center justify-between gap-2">
-            <span className="truncate text-paper-100/80">{user?.name || user?.email}</span>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-moss-500/20 text-moss-400 font-semibold flex items-center justify-center text-sm border border-moss-500/30 shrink-0">
+                {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-paper-100 truncate">{user?.name || 'Learner'}</p>
+                <p className="text-[11px] text-paper-100/60 truncate">{user?.email}</p>
+              </div>
+            </div>
             <button
-              onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-              className="text-clay-400 hover:text-clay-500 focus-ring rounded"
+              onClick={() => logout()}
+              className="w-full text-xs text-clay-400 hover:text-clay-300 transition-colors py-1.5 rounded-lg bg-ink-900 border border-ink-800 text-center font-medium focus-ring"
             >
-              Log out
+              Sign out
             </button>
           </div>
         ) : (
-          <button
-            onClick={() => loginWithRedirect()}
-            className="w-full rounded-md bg-moss-500 hover:bg-moss-600 transition-colors py-2 font-medium focus-ring"
+          <NavLink
+            to="/login"
+            className="w-full block text-center rounded-xl bg-moss-600 hover:bg-moss-700 transition-colors py-2.5 font-medium text-sm text-white shadow-sm focus-ring"
           >
-            Log in
-          </button>
+            Sign in
+          </NavLink>
         )}
       </div>
     </aside>

@@ -66,21 +66,22 @@ export default function App() {
           <div className="pt-3 border-t border-ink-800 flex items-center justify-between text-xs">
             {isAuthenticated ? (
               <>
-                <span className="truncate max-w-[180px]">{user?.name || user?.email}</span>
+                <span className="truncate max-w-[180px] text-paper-100">{user?.name || user?.email}</span>
                 <button
-                  onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-                  className="text-clay-400 font-medium"
+                  onClick={() => logout()}
+                  className="text-clay-400 hover:text-clay-300 font-medium py-1 px-2 rounded bg-ink-800"
                 >
                   Log out
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => loginWithRedirect()}
-                className="w-full text-center rounded-lg bg-moss-600 py-2 font-semibold text-white"
+              <NavLink
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center rounded-lg bg-moss-600 hover:bg-moss-700 py-2 font-semibold text-white transition-colors"
               >
-                Log in
-              </button>
+                Sign in
+              </NavLink>
             )}
           </div>
         </div>
