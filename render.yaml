@@ -1,11 +1,11 @@
 services:
-  # Spring Boot Backend Web Service
+  # Spring Boot Fullstack Service (Backend API + React Frontend)
   - type: web
-    name: text-to-learn-backend
-    env: java
+    name: text-to-learn
+    env: docker
     rootDir: server
-    buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -jar target/text-to-learn-backend.jar
+    dockerfilePath: Dockerfile
+    dockerContext: .
     plan: free
     envVars:
       - key: PORT
