@@ -1,52 +1,126 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
-
-const auth0Domain = import.meta.env.VITE_AUTH0_DOMAIN
-const auth0ClientId = import.meta.env.VITE_AUTH0_CLIENT_ID
-const auth0Configured = Boolean(auth0Domain && auth0ClientId)
 
 const AuthContext = createContext(null)
+
+const USERS_STORAGE_KEY = 'ttl_registered_users'
+const ACTIVE_USER_KEY = 'ttl_active_user'
+
+// Pre-seeded default demo account
+const DEFAULT_USERS = [
+  {
+    name: 'Demo Learner',
+    email: 'demo@texttolearn.ai',
+    password: 'password123',
+    id: 'user_default_1',
+  },
+]
+
+function getStoredUsers() {
+  try {
+    const raw = localStorage.getItem(USERS_STORAGE_KEY)
+    if (!raw) {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(DEFAULT_USERS))
+      return DEFAULT_USERS
+    }
+    return JSON.parse(raw)
+  } catch {
+    return DEFAULT_USERS
+  }
+}
+
+function saveUsers(users) {
+  try {
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users))
+  } catch (e) {
+    console.error('Failed to save users', e)
+  }
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('text_to_learn_user')
-      return saved ? JSON.parse(saved) : null
+      const active = localStorage.getItem(ACTIVE_USER_KEY)
+      return active ? JSON.parse(active) : null
     } catch {
       return null
     }
   })
 
-  const login = (userData) => {
-    const defaultUser = {
-      name: userData?.name || (userData?.email ? userData.email.split('@')[0] : 'Learner'),
-      email: userData?.email || 'learner@texttolearn.ai',
-      sub: 'local-user-' + Date.now(),
+  // Sign in existing user with email & password check
+  const signIn = (email, password) => {
+    const users = getStoredUsers()
+    const cleanEmail = email.trim().toLowerCase()
+    const found = users.find((u) => u.email.toLowerCase() === cleanEmail)
+
+    if (!found) {
+      return { success: false, error: 'User does not exist. Please sign up first.' }
     }
-    setUser(defaultUser)
-    try {
-      localStorage.setItem('text_to_learn_user', JSON.stringify(defaultUser))
-    } catch (e) {
-      console.error(e)
+
+    if (found.password && found.password !== password) {
+      return { success: false, error: 'Incorrect password. Please try again.' }
     }
-    return defaultUser
+
+    const sessionUser = {
+      name: found.name,
+      email: found.email,
+      id: found.id,
+    }
+    setUser(sessionUser)
+    localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(sessionUser))
+    return { success: true, user: sessionUser }
   }
 
+  // Sign up new user
+  const signUp = (name, email, password) => {
+    const users = getStoredUsers()
+    const cleanEmail = email.trim().toLowerCase()
+    const existing = users.find((u) => u.email.toLowerCase() === cleanEmail)
+
+    if (existing) {
+      return { success: false, error: 'An account with this email already exists. Please sign in.' }
+    }
+
+    const newUser = {
+      name: name.trim(),
+      email: cleanEmail,
+      password: password,
+      id: 'user_' + Date.now(),
+    }
+
+    const updated = [...users, newUser]
+    saveUsers(updated)
+
+    const sessionUser = {
+      name: newUser.name,
+      email: newUser.email,
+      id: newUser.id,
+    }
+    setUser(sessionUser)
+    localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(sessionUser))
+    return { success: true, user: sessionUser }
+  }
+
+  // 1-Click Demo Login
+  const demoLogin = () => {
+    return signIn('demo@texttolearn.ai', 'password123')
+  }
+
+  // Log out
   const logout = () => {
     setUser(null)
     try {
-      localStorage.removeItem('text_to_learn_user')
+      localStorage.removeItem(ACTIVE_USER_KEY)
     } catch (e) {
       console.error(e)
     }
   }
 
-  const loginWithRedirect = (options) => {
+  const loginWithRedirect = () => {
     window.location.href = '/login'
   }
 
   const getAccessTokenSilently = async () => {
-    return 'demo-session-token-' + (user?.email || 'guest')
+    return 'session-token-' + (user?.id || 'guest')
   }
 
   const value = {
@@ -54,7 +128,9 @@ export function AuthProvider({ children }) {
     isAuthenticated: Boolean(user),
     isLoading: false,
     configured: true,
-    login,
+    signIn,
+    signUp,
+    demoLogin,
     logout,
     loginWithRedirect,
     getAccessTokenSilently,
@@ -63,26 +139,15 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-/**
- * useAuth: Returns active user state and authentication methods.
- * Seamlessly works out-of-the-box in demo mode, or connects to Auth0 if configured.
- */
 export function useAuth() {
-  if (auth0Configured) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const auth0 = useAuth0()
-    return { ...auth0, configured: true }
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const context = useContext(AuthContext)
   if (context) return context
 
-  // Fallback if not wrapped in provider
+  // Fallback if context not mounted yet
   const saved = (() => {
     try {
-      const s = localStorage.getItem('text_to_learn_user')
-      return s ? JSON.parse(s) : null
+      const active = localStorage.getItem(ACTIVE_USER_KEY)
+      return active ? JSON.parse(active) : null
     } catch {
       return null
     }
@@ -93,17 +158,16 @@ export function useAuth() {
     isAuthenticated: Boolean(saved),
     isLoading: false,
     configured: true,
-    login: (u) => {
-      localStorage.setItem('text_to_learn_user', JSON.stringify(u))
-      window.location.reload()
-    },
+    signIn: () => ({ success: false, error: 'Auth context not initialized' }),
+    signUp: () => ({ success: false, error: 'Auth context not initialized' }),
+    demoLogin: () => {},
     logout: () => {
-      localStorage.removeItem('text_to_learn_user')
+      localStorage.removeItem(ACTIVE_USER_KEY)
       window.location.reload()
     },
     loginWithRedirect: () => {
       window.location.href = '/login'
     },
-    getAccessTokenSilently: async () => 'demo-token',
+    getAccessTokenSilently: async () => 'session-token',
   }
 }
