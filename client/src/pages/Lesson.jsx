@@ -5,6 +5,7 @@ import ErrorMessage from '../components/ErrorMessage'
 import LessonRenderer from '../components/LessonRenderer'
 import LessonPDFExporter from '../components/LessonPDFExporter'
 import HinglishAudioPlayer from '../components/HinglishAudioPlayer'
+import VideoBlock from '../components/blocks/VideoBlock'
 import { lessonApi } from '../utils/api'
 
 export default function Lesson() {
@@ -111,6 +112,9 @@ export default function Lesson() {
       {/* Dynamic Content Block Renderer */}
       <div className="rounded-2xl border border-ink-700/10 bg-white p-6 md:p-8 shadow-xs mb-10">
         <LessonRenderer content={lesson.content} />
+        {!(lesson.content || []).some((b) => b.type === 'video') && (
+          <VideoBlock block={{ query: `${lesson.title} tutorial` }} />
+        )}
       </div>
 
       {/* Lesson Footer Navigation */}
