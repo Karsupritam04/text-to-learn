@@ -110,7 +110,7 @@ export default function Course() {
               onClick={() => navigate(`/lesson/${stats.firstUnfinished || firstLessonId}`)}
               className="rounded-xl bg-moss-600 hover:bg-moss-700 text-white font-semibold px-6 py-3 text-sm shadow-md hover:shadow-lg transition-all focus-ring"
             >
-              {stats.enrichedLessons === 0 ? 'Start Course Now 🚀' : 'Continue Learning →'}
+              {stats.enrichedLessons === 0 ? 'Start Course Now' : 'Continue Learning →'}
             </button>
           </div>
         )}

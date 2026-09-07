@@ -67,9 +67,8 @@ export default function Login() {
         <button
           type="button"
           onClick={handleDemo}
-          className="w-full mb-6 py-3 px-4 rounded-xl bg-moss-600 hover:bg-moss-700 text-white font-medium text-sm transition-all shadow-md shadow-moss-600/20 flex items-center justify-center gap-2 focus-ring"
+          className="w-full mb-6 py-3 px-4 rounded-xl bg-moss-600 hover:bg-moss-700 text-white font-medium text-sm transition-all shadow-md shadow-moss-600/20 flex items-center justify-center focus-ring"
         >
-          <span>⚡</span>
           <span>1-Click Quick Demo Sign In</span>
         </button>
 
